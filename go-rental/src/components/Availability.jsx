@@ -1,0 +1,233 @@
+import React, { useEffect, useRef, useState } from 'react'
+import { DateRange } from "react-date-range";
+import { format } from "date-fns";
+import "react-date-range/dist/styles.css"; // main style
+import "react-date-range/dist/theme/default.css"; // theme css
+
+const Availability = ({ pickupAddress }) => {
+  const [availability, setAvailability] = useState("self-pickup");
+  const [range, setRange] = useState([
+    {
+      startDate: new Date(),
+      endDate: new Date(),
+      key: "selection",
+    },
+  ]);
+  const [showPicker, setShowPicker] = useState(false);
+  const pickerRef = useRef(null);
+
+  const formattedRange = `${format(
+    range[0].startDate,
+    "EEE, d MMM yyyy"
+  )} - ${format(range[0].endDate, "EEE, d MMM yyyy")}`;
+
+  // Handle outside click to close picker
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (pickerRef.current && !pickerRef.current.contains(event.target)) {
+        setShowPicker(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  return (
+    <div className="review-sec mt-0">
+      <div className="review-header">
+        <h4>Check Availability</h4>
+      </div>
+      <div className="location-content">
+        <div className="delivery-tab">
+          <ul className="nav">
+            <li>
+              <label
+                className="booking_custom_check"
+                data-bs-toggle="tab"
+                data-bs-target="#delivery"
+              >
+                <input
+                  type="radio"
+                  name="rent_type"
+                  onChange={() => setAvailability("Delivery")}
+                />
+                <span className="booking_checkmark">
+                  <span className="checked-title">Delivery</span>
+                </span>
+              </label>
+            </li>
+            <li>
+              <label
+                className="booking_custom_check"
+                data-bs-toggle="tab"
+                data-bs-target="#pickup"
+              >
+                <input
+                  type="radio"
+                  name="rent_type"
+                  defaultChecked
+                  onChange={() => setAvailability("self-pickup")}
+                />
+                <span className="booking_checkmark">
+                  <span className="checked-title">Self Pickup</span>
+                </span>
+              </label>
+            </li>
+          </ul>
+        </div>
+        <div>
+          {
+            <div className="tab-pane fade active show" id="delivery">
+              <form>
+                <ul>
+                  <li className="column-group-main">
+                    {availability === "Delivery" && (
+                      <div className="input-block">
+                        <label>Delivery Location</label>
+                        <div className="group-img">
+                          <div className="form-wrap">
+                            <input
+                              type="text"
+                              className="form-control"
+                              placeholder="Enter your location"
+                            />
+                            <span className="form-icon">
+                              <i className="fa-solid fa-location-crosshairs" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {availability === "self-pickup" && (
+                      <div className="input-block">
+                        <label>Pickup Location</label>
+                        <div className="group-img">
+                          <div className="form-wrap">
+                            <input
+                              type="text"
+                              value={pickupAddress}
+                              readOnly
+                              className="form-control"
+                              placeholder="Enter your location"
+                            />
+                            <span className="form-icon">
+                              <i className="fa-solid fa-location-crosshairs" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                  <li className="column-group-main">
+                    <div className="input-block">
+                      <label className="custom_check d-inline-flex location-check m-0">
+                        <span>Return to same location</span>
+                        <input type="checkbox" name="remeber" />
+                        <span className="checkmark" />
+                      </label>
+                    </div>
+                  </li>
+                  <li className="column-group-main">
+                    <div className="input-block">
+                      <label>Return Location</label>
+                      <div className="group-img">
+                        <div className="form-wrap">
+                          <input
+                            type="text"
+                            className="form-control"
+                            placeholder="78, 10th street Laplace USA"
+                          />
+                          <span className="form-icon">
+                            <i className="fa-solid fa-location-crosshairs" />
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </li>
+                  <li className="column-group-main">
+                    <div className="input-block m-0">
+                      <label>Pickup Date & Return Date</label>
+                    </div>
+                    <div className="input-block-wrapp sidebar-form">
+                      <div className="input-block  me-lg-2">
+                        <div className="group-img">
+                          <div
+                            className="form-wrap flex flex-col items-center justify-center p-4 shadow-lg rounded-lg w-fit mx-auto mt-10 relative"
+                            ref={pickerRef}
+                          >
+                            {/* Show selected date and toggle calendar on click */}
+                            <div
+                              onClick={() => setShowPicker((prev) => !prev)}
+                              className="cursor-pointer text-[16px] px-4 py-2 bg-orange-100 text-orange-700 font-medium rounded-lg shadow hover:bg-orange-200 transition"
+                            >
+                              📅 {formattedRange}
+                            </div>
+
+                            {/* Date picker appears only when showPicker is true */}
+                            {showPicker && (
+                              <div className="mt-3">
+                                <DateRange
+                                  editableDateInputs={true}
+                                  onChange={(item) =>
+                                    setRange([item.selection])
+                                  }
+                                  moveRangeOnFirstSelection={false}
+                                  ranges={range}
+                                  rangeColors={["#f0c241"]}
+                                  className="rounded-xl"
+                                  minDate={new Date()}
+                                  calendarFocus="forward"
+                                />
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      {/*<div className="input-block">
+                        <div className="group-img">
+                          <div className="form-wrap">
+                            <input
+                              type="text"
+                              className="form-control timepicker"
+                              placeholder="11:00 AM"
+                            />
+                            <span className="form-icon">
+                              <i className="fa-regular fa-clock" />
+                            </span>
+                          </div>
+                        </div>
+                      </div>*/}
+                    </div>
+                  </li>
+                  <li className="column-group-last">
+                    <div className="input-block mb-0">
+                      <div className="search-btn">
+                        <a
+                          href="booking-checkout.html"
+                          className="btn btn-primary check-available w-100"
+                        >
+                          Book
+                        </a>
+                        <a
+                          data-bs-toggle="modal"
+                          data-bs-target="#enquiry"
+                          className="btn btn-theme"
+                        >
+                          Enquire Us
+                        </a>
+                      </div>
+                    </div>
+                  </li>
+                </ul>
+              </form>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Availability

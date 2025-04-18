@@ -3,10 +3,10 @@ import { Link, useLocation } from 'react-router-dom';
 
 const Navbar = () => {
 
-
+  
   const location=useLocation();
 
-
+   
 
 
   return (
@@ -14,24 +14,24 @@ const Navbar = () => {
       <header className="header">
         <div className="container-fluid">
           <nav className="navbar navbar-expand-lg header-nav">
-            <div className="navbar-header">
-              <Link id="mobile_btn" to="/">
+            <div className="navbar-header ">
+              <a id="mobile_btn">
                 <span className="bar-icon">
                   <span />
                   <span />
                   <span />
                 </span>
-              </Link>
+              </a>
               <Link to="/" className="navbar-brand logo">
                 <img
-                  src="assets/img/logo.svg"
+                  src="/assets/img/logo.svg"
                   className="img-fluid"
                   alt="Logo"
                 />
               </Link>
               <Link to="/" className="navbar-brand logo-small">
                 <img
-                  src="assets/img/logo-small.png"
+                  src="/assets/img/logo-small.png"
                   className="img-fluid"
                   alt="Logo"
                 />
@@ -41,7 +41,7 @@ const Navbar = () => {
               <div className="menu-header">
                 <Link to="/" className="menu-logo">
                   <img
-                    src="assets/img/logo.svg"
+                    src="/assets/img/logo.svg"
                     className="img-fluid"
                     alt="Logo"
                   />

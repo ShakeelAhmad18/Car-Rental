@@ -12,9 +12,9 @@ const Footer = () => {
 
   return (
    
-  <footer className="footer flex">	
+  <footer className="footer">	
     {/* Footer Top */}	
-    <div className="footer-top aos" data-aos="fade-down">
+    <div className="footer-top aos w-full" data-aos="fade-down">
       <div className="container">
         <div className="row">
           <div className="col-lg-7">
@@ -143,7 +143,7 @@ const Footer = () => {
     </div>
     {/* /Footer Top */}
     {/* Footer Bottom */}
-    <div className="footer-bottom">
+    <div className="footer-bottom w-full">
       <div className="container">
         {/* Copyright */}
         <div className="copyright">

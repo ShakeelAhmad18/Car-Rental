@@ -2,6 +2,10 @@ import React from "react";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { FaUserTie } from "react-icons/fa";
 import { IoCarSport } from "react-icons/io5";
+import { AiOutlineInsurance } from "react-icons/ai";
+import { FaServicestack } from "react-icons/fa6";
+
+
 
 const AdminDashboard = () => {
 
@@ -102,16 +106,30 @@ const AdminDashboard = () => {
                     </Link>
                   </li>
                   <li>
-                    <a href="user-messages.html">
-                      <img src="assets/img/icons/message-icon.svg" alt="Icon" />
-                      <span>Messages</span>
-                    </a>
+                    <Link
+                      to="/admindashboard/add-insurance"
+                      className={`${
+                        location.pathname === "/admindashboard/add-insurance"
+                          ? "active"
+                          : ""
+                      }`}
+                    >
+                      <AiOutlineInsurance size={24} className="mb-1" />
+                      <span className="text-xl">Insurance</span>
+                    </Link>
                   </li>
                   <li>
-                    <a href="user-wallet.html">
-                      <img src="assets/img/icons/wallet-icon.svg" alt="Icon" />
-                      <span>My Wallet</span>
-                    </a>
+                    <Link
+                      to="/admindashboard/extra-services"
+                      className={`${
+                        location.pathname === "/admindashboard/extra-services"
+                          ? "active"
+                          : ""
+                      }`}
+                    >
+                      <FaServicestack size={24} className="mb-1" />
+                      <span>Extra Services</span>
+                    </Link>
                   </li>
                   <li>
                     <a href="user-payment.html">

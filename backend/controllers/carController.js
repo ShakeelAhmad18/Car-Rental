@@ -2,6 +2,8 @@ const Car = require("../models/carModel");
 const { fileSizeFormatter } = require("../utils/fileUploads");
 const cloudinary = require("cloudinary").v2;
 const path = require("path");
+const Booking = require("../models/bookingModel");
+const qs = require('qs');
 
 // 🆕 Add a new car
 const addCar = async (req, res) => {
@@ -65,7 +67,7 @@ const getAllCars = async (req, res) => {
 const getCarById = async (req, res) => {
     try {
         const { id } = req.params;
-        const car = await Car.findById(id);
+        const car = await Car.findById(id).populate("owner", "firstName lastName phone image address city state");
 
         if (!car) {
             return res.status(404).json({ message: "Car Not Found" });
@@ -80,13 +82,22 @@ const getCarById = async (req, res) => {
 
 // 🆕 Update a car
 const updateCar = async (req, res) => {
-    try {
-        const { id } = req.params;
+    const { id } = req.params;
         const { 
             name, brand, rentPerkm, model, color, fuelType, AC, doors, seats, driveTrain, 
             VIN, Engine, mileage, category, transmission, owner, description, 
             street, city, country, lat, lng 
         } = req.body;
+
+    try {
+
+        if (!street || !city || !country || lat === undefined || lng === undefined) {
+      return res.status(400).json({
+        message: "All address fields (street, city, country, lat, lng) are required"
+      });
+    }
+        
+
 
         const car = await Car.findById(id);
 
@@ -192,6 +203,86 @@ const addReview = async (req, res) => {
     }
 };
 
+
+//get available car
+
+const getAvailableCars = async (req, res) => {
+    try {
+        // Parse query manually to support filters[brand]=Ford syntax
+        const parsedQuery = qs.parse(req._parsedUrl.query);
+        const { lat, lng, pickupDate, returnDate } = parsedQuery;
+        const filters = parsedQuery.filters || {};
+
+        
+
+        // If location or date filters are missing, return all cars
+        if (!lat || !lng || !pickupDate || !returnDate) {
+            const allCars = await Car.find().populate("owner", "image");
+            return res.status(200).json({
+                success: true,
+                total: allCars.length,
+                data: allCars,
+                message: 'Showing all cars because no location or date filters were applied.',
+            });
+        }
+
+        const pickup = new Date(pickupDate);
+        const returnD = new Date(returnDate);
+
+        // Step 1: Find cars near the provided location
+        const nearbyCars = await Car.find({
+            'address.lat': { $gte: Number(lat) - 0.1, $lte: Number(lat) + 0.1 },
+            'address.lng': { $gte: Number(lng) - 0.1, $lte: Number(lng) + 0.1 }
+        }).populate("owner", "image");
+
+        const carIds = nearbyCars.map(car => car._id);
+
+        // Step 2: Get bookings that overlap with selected dates
+        const conflictingBookings = await Booking.find({
+            car: { $in: carIds },
+            $or: [
+                { pickupDate: { $lte: returnD }, returnDate: { $gte: pickup } },
+            ]
+        });
+
+        const bookedCarIds = conflictingBookings.map(booking => booking.car.toString());
+
+        // Step 3: Exclude booked cars
+        let availableCars = nearbyCars.filter(car => !bookedCarIds.includes(car._id.toString()));
+
+        // Step 4: Apply additional filters
+        const validCarFields = ['brand', 'model', 'transmission', 'fuelType', 'seats', 'category','mileage'];
+
+        if (Object.keys(filters).length > 0) {
+            availableCars = availableCars.filter(car => {
+                for (const key in filters) {
+                    if (!validCarFields.includes(key)) continue;
+
+                    const filterValue = filters[key]?.toString().trim().toLowerCase();
+                    if (!filterValue) continue;
+
+                    const carFieldValue = car[key]?.toString().trim().toLowerCase();
+                    if (!carFieldValue || carFieldValue !== filterValue) {
+                        return false;
+                    }
+                }
+                return true;
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            total: availableCars.length,
+            data: availableCars,
+        });
+
+    } catch (error) {
+        console.error('Error fetching available cars:', error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
 // Export controllers
 module.exports = {
     addCar,
@@ -199,5 +290,6 @@ module.exports = {
     getCarById,
     updateCar,
     deleteCar,
-    addReview
+    addReview,
+    getAvailableCars,
 };

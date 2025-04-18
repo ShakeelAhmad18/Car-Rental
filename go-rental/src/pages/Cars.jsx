@@ -1,29 +1,142 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Navbar from "../components/Navbar";
 import { Link } from "react-router-dom";
 import AOS from "aos";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "aos/dist/aos.css";
 import Footer from "../components/Footer";
 import GridView from "../components/GridView";
-
-        
+import ListView from "../components/ListView";
+import MapView from "../components/MapView";
+import { FaMapMarkerAlt } from "react-icons/fa";
+import axios from "axios";
+import { getAvailableCars } from "../redux/carSlice";
+import { useDispatch, useSelector } from "react-redux";
+import CarFilters from "../components/CarFilters";
 
 const Cars = () => {
+  const [address, setAddress] = useState("");
+  const [suggestions, setSuggestions] = useState([]);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
+  const [pickupDate, setpickupDate] = useState(new Date());
+  const [returnDate, setReturnDate] = useState(new Date(pickupDate));
+  const [selectedLocation, setSelectedLocation] = useState(null)
+  const [view, setView] = useState("grid");
+  const dispatch = useDispatch();
+  const {cars}=useSelector((state) => state.car);
+  const {loading}=useSelector((state) => state.car);
+  const [viewPage,setViewPage]=useState(3);
+  const [brand,setBrand]=useState('');
+  const [model,setModel]=useState('');
+  const [year,setYear]=useState('');
+  const [transmission,setTransmission]=useState('');
+  const [fuelType,setFuelType]=useState('');
+  const [seats, setSeats] = useState("");
+  const [category,setCategory]=useState('');
+  const [mileage, setMileage] = useState("");
 
-  const [view,setView]=useState("grid");
-    
-  
+
   useEffect(() => {
     AOS.init();
   }, []);
+   
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      if (address.length > 2) {
+        try {
+          const res = await axios.get(
+            `https://autosuggest.search.hereapi.com/v1/autosuggest`,
+            {
+              params: {
+                q: address, // User input
+                apiKey: import.meta.env.VITE_API_KEY, // HERE Maps API Key
+                at: "40.730610,-73.935242", // Example location (New York) - optional
+                limit: 5, // Number of results
+              },
+            }
+          );
+          setSuggestions(res.data.items);
+          setShowDropdown(true);
+        } catch (error) {
+          console.error("Error fetching autocomplete suggestions:", error);
+        }
+      } else {
+        setSuggestions([]);
+        setShowDropdown(false);
+      }
+    };
+
+    fetchSuggestions();
+  }, [address]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const handleSelectAddress = (suggestion) => {
+    setAddress(suggestion.title); // Set the selected address
+    setSelectedLocation(suggestion.position); // Store lat & lng
+    setShowDropdown(false); // Hide dropdown
+  };
+
+  const handleView = (views) => {
+    setView(views);
+  };
+
+  const clearAllFilters = (e) => {
+    e.preventDefault();
+
+    setBrand("");
+    setCategory("");
+    setModel("");
+    setSeats("");
+    setFuelType("");
+    setMileage("");
+    setTransmission("");
+  };
+
+  //formdata for search and fetch avaiables cars
+
+  useEffect(() => {
+
+   const formData = {
+     pickupDate: pickupDate?.toISOString(),
+     returnDate: returnDate?.toISOString(),
+     lat: selectedLocation?.lat,
+     lng: selectedLocation?.lng,
+     filters: {
+       brand,
+       category,
+       model,
+       fuelType,
+       mileage,
+       seats,
+       transmission
+     },
+   };
+
+    if(formData.lat && formData.lng && formData.pickupDate && formData.returnDate){
+    dispatch(getAvailableCars({ data: formData }))
+    }
+   
+    
+
+  },[address,returnDate,pickupDate,clearAllFilters,selectedLocation,dispatch,brand,model,year,mileage,transmission,fuelType,seats,category])
 
 
-  const handleView = (view) => {
-    setView(view);
-  }
-    
-  console.log(view);
-    
+
+
+  
+   
   return (
     <div className="main-wrapper listing-page text-xl font-bold font-serif">
       <Navbar />
@@ -58,11 +171,35 @@ const Cars = () => {
                   <div className="input-block">
                     <label>Pickup Location</label>
                     <div className="group-img">
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder="Enter City, Airport, or Address"
-                      />
+                      <div
+                        className="relative w-full max-w-md mx-auto"
+                        ref={dropdownRef}
+                      >
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={address}
+                            onChange={(e) => setAddress(e.target.value)}
+                            className="form-control"
+                            placeholder="Enter City, Airport, or Address"
+                          />
+                        </div>
+                        {/* Dropdown */}
+                        {showDropdown && suggestions.length > 0 && (
+                          <ul className="absolute z-20 mt-2 w-full bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-auto">
+                            {suggestions.map((suggestion, index) => (
+                              <li
+                                key={index}
+                                className="flex items-center text-sm px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                onClick={() => handleSelectAddress(suggestion)}
+                              >
+                                <FaMapMarkerAlt className="text-blue-500 mr-3" />
+                                {suggestion.title}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </div>
                       <span>
                         <i className="feather-map-pin" />
                       </span>
@@ -75,11 +212,13 @@ const Cars = () => {
                   </div>
                   <div className="input-block-wrapp">
                     <div className="input-block date-widget">
-                      <div className="group-img">
-                        <input
-                          type="text"
-                          className="form-control datetimepicker"
-                          placeholder="04/11/2023"
+                      <div className="group-img text-sm">
+                        <DatePicker
+                          selected={pickupDate}
+                          onChange={(date) => setpickupDate(date)}
+                          minDate={new Date()}
+                          dateFormat="eee, d MMMM yyyy"
+                          className="rounded-lg w-full lg:w-48"
                         />
                         <span>
                           <i className="feather-calendar" />
@@ -106,11 +245,13 @@ const Cars = () => {
                   </div>
                   <div className="input-block-wrapp">
                     <div className="input-block date-widge">
-                      <div className="group-img">
-                        <input
-                          type="text"
-                          className="form-control datetimepicker"
-                          placeholder="04/11/2023"
+                      <div className="group-img text-sm">
+                        <DatePicker
+                          selected={returnDate}
+                          onChange={(date) => setReturnDate(date)}
+                          minDate={new Date(pickupDate)}
+                          dateFormat="eee, d MMMM yyyy"
+                          className="rounded-lg lg:w-48"
                         />
                         <span>
                           <i className="feather-calendar" />
@@ -154,7 +295,7 @@ const Cars = () => {
               <div className="row d-flex align-items-center">
                 <div className="col-xl-4 col-lg-3 col-sm-12 col-12">
                   <div className="count-search">
-                    <p>Showing 1-9 of 154 Cars</p>
+                    <p>Showing {cars?.data?.length || 0} Cars</p>
                   </div>
                 </div>
                 <div className="col-xl-8 col-lg-9 col-sm-12 col-12">
@@ -164,12 +305,15 @@ const Cars = () => {
                         <li>
                           <span className="sortbytitle">Show : </span>
                           <div className="sorting-select select-one">
-                            <select className="form-control select">
-                              <option>5</option>
-                              <option>10</option>
-                              <option>15</option>
-                              <option>20</option>
-                              <option>30</option>
+                            <select
+                              className="form-control select"
+                              onChange={(e) => setViewPage(e.target.value)}
+                            >
+                              <option value={3}>3</option>
+                              <option value={6}>6</option>
+                              <option value={9}>9</option>
+                              <option value={12}>12</option>
+                              <option value={15}>15</option>
                             </select>
                           </div>
                         </li>
@@ -233,1015 +377,35 @@ const Cars = () => {
       <section className="section car-listing pt-0">
         <div className="container">
           <div className="row">
-            <div className="col-xl-3 col-lg-4 col-sm-12 col-12 theiaStickySidebar">
-              <form action="#" autoComplete="off" className="sidebar-form">
-                <div className="sidebar-heading">
-                  <h3>What Are You Looking For</h3>
-                </div>
-                <div className="product-search">
-                  <div className="form-custom">
-                    <input
-                      type="text"
-                      className="form-control"
-                      id="member_search1"
-                      placeholder
-                    />
-                    <span>
-                      <img src="assets/img/icons/search.svg" alt="img" />
-                    </span>
-                  </div>
-                </div>
-                <div className="product-availability">
-                  <h6>Availability</h6>
-                  <div className="status-toggle">
-                    <input
-                      id="mobile_notifications"
-                      className="check"
-                      type="checkbox"
-                      defaultChecked
-                    />
-                    <label
-                      htmlFor="mobile_notifications"
-                      className="checktoggle"
-                    >
-                      checkbox
-                    </label>
-                  </div>
-                </div>
-                <div className="accord-list">
-                  <div className="accordion" id="accordionMain1">
-                    <div className="card-header-new" id="headingOne">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseOne"
-                          aria-expanded="true"
-                          aria-controls="collapseOne"
-                        >
-                          Car Brand
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseOne"
-                      className="collapse show"
-                      aria-labelledby="headingOne"
-                      data-bs-parent="#accordionExample1"
-                    >
-                      <div className="card-body-chat">
-                        <div className="row">
-                          <div className="col-md-12">
-                            <div id="checkBoxes1">
-                              <div className="selectBox-cont">
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Tesla
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Ford
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Mercediz Benz
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Audi
-                                </label>
-                                {/* View All */}
-                                <div className="view-content">
-                                  <div className="viewall-One">
-                                    <label className="custom_check w-100">
-                                      <input type="checkbox" name="username" />
-                                      <span className="checkmark" /> Kia
-                                    </label>
-                                    <label className="custom_check w-100">
-                                      <input type="checkbox" name="username" />
-                                      <span className="checkmark" /> Honda
-                                    </label>
-                                    <label className="custom_check w-100">
-                                      <input type="checkbox" name="username" />
-                                      <span className="checkmark" /> Toyota
-                                    </label>
-                                  </div>
-                                </div>
-                                {/* /View All */}
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain2">
-                    <div className="card-header-new" id="headingTwo">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseTwo"
-                          aria-expanded="true"
-                          aria-controls="collapseTwo"
-                        >
-                          Car Category
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseTwo"
-                      className="collapse"
-                      aria-labelledby="headingTwo"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div id="checkBoxes2">
-                          <div className="selectBox-cont">
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Convertible (25)
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Coupe (15)
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Sedan (10)
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> EV (5)
-                            </label>
-                            {/* View All */}
-                            <div className="view-content">
-                              <div className="viewall-One">
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Hatchback (123)
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Luxury (06)
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> SUV (6)
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Wagon (5)
-                                </label>
-                              </div>
-                            </div>
-                            {/* /View All */}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain3">
-                    <div className="card-header-new" id="headingYear">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseYear"
-                          aria-expanded="true"
-                          aria-controls="collapseYear"
-                        >
-                          Year
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseYear"
-                      className="collapse"
-                      aria-labelledby="headingYear"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div id="checkBoxes02">
-                          <div className="selectBox-cont">
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> 2024
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> 2022
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> 2021
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> 2020
-                            </label>
-                            {/* View All */}
-                            <div className="view-content">
-                              <div className="viewall-One">
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> 2019
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> 2018
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> 2019
-                                </label>
-                              </div>
-                            </div>
-                            {/* /View All */}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain04">
-                    <div className="card-header-new" id="headingfuel">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapsefuel"
-                          aria-expanded="true"
-                          aria-controls="collapsefuel"
-                        >
-                          Fuel Type
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapsefuel"
-                      className="collapse"
-                      aria-labelledby="headingfuel"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div className="fuel-list">
-                          <ul>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="petrol"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="petrol">Petrol</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="diesel"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="diesel">Diesel</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="electric"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="electric">Electric</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="cng"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="cng">CNG</label>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain5">
-                    <div className="card-header-new" id="headingmileage">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapsemileage"
-                          aria-expanded="true"
-                          aria-controls="collapsemileage"
-                        >
-                          Mileage
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapsemileage"
-                      className="collapse"
-                      aria-labelledby="headingmileage"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div className="fuel-list">
-                          <ul>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="mileage"
-                                  id="limited"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="limited">Limited</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="mileage"
-                                  id="unlimited"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="unlimited">Unlimited</label>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain6">
-                    <div className="card-header-new" id="headingrental">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapserental"
-                          aria-expanded="true"
-                          aria-controls="collapserental"
-                        >
-                          Rental Type
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapserental"
-                      className="collapse"
-                      aria-labelledby="headingrental"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div className="fuel-list">
-                          <ul>
-                            <li>
-                              <div className="input-selection">
-                                <input type="radio" name="any" id="any" />
-                                <label htmlFor="any">Any</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="day"
-                                  id="day"
-                                  defaultChecked
-                                />
-                                <label htmlFor="day">Per Day</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="hour"
-                                  id="hour"
-                                  defaultChecked
-                                />
-                                <label htmlFor="hour">Per Hour</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input type="radio" name="week" id="week" />
-                                <label htmlFor="week">Per Week</label>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain06">
-                    <div className="card-header-new" id="headingspec">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapsespec"
-                          aria-expanded="true"
-                          aria-controls="collapsespec"
-                        >
-                          Car Specifications
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapsespec"
-                      className="collapse"
-                      aria-labelledby="headingspec"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div id="checkBoxes20">
-                          <div className="selectBox-cont">
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Air Conditioners
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Keyless
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Panoramic
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" /> Bluetooth
-                            </label>
-                            {/* View All */}
-                            <div className="view-content">
-                              <div className="viewall-One">
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Aux
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Top Window
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Speakers
-                                </label>
-                                <label className="custom_check w-100">
-                                  <input type="checkbox" name="username" />
-                                  <span className="checkmark" /> Automatic
-                                  Window
-                                </label>
-                              </div>
-                            </div>
-                            {/* /View All */}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain7">
-                    <div className="card-header-new" id="headingColor">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseColor"
-                          aria-expanded="true"
-                          aria-controls="collapseColor"
-                        >
-                          Colors
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseColor"
-                      className="collapse"
-                      aria-labelledby="headingColor"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div className="theme-colorsset">
-                          <ul>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="greenColor"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label
-                                  htmlFor="greenColor"
-                                  className="green-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="yellowColor"
-                                  defaultValue="yellow"
-                                />
-                                <label
-                                  htmlFor="yellowColor"
-                                  className="yellow-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="brownColor"
-                                  defaultValue="blue"
-                                />
-                                <label
-                                  htmlFor="brownColor"
-                                  className="brown-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="blackColor"
-                                  defaultValue="green"
-                                />
-                                <label
-                                  htmlFor="blackColor"
-                                  className="black-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="redColor"
-                                  defaultValue="red"
-                                  defaultChecked
-                                />
-                                <label htmlFor="redColor" className="red-clr" />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="grayColor"
-                                  defaultValue="blue"
-                                />
-                                <label
-                                  htmlFor="grayColor"
-                                  className="gray-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="gray100Color"
-                                  defaultValue="green"
-                                />
-                                <label
-                                  htmlFor="gray100Color"
-                                  className="gray100-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="blueColor"
-                                  defaultValue="yellow"
-                                />
-                                <label
-                                  htmlFor="blueColor"
-                                  className="blue-clr"
-                                />
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-themeselects">
-                                <input
-                                  type="radio"
-                                  name="color"
-                                  id="whiteColor"
-                                  defaultValue="yellow"
-                                />
-                                <label
-                                  htmlFor="whiteColor"
-                                  className="white-clr"
-                                />
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain8">
-                    <div className="card-header-new" id="headingThree">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseThree"
-                          aria-expanded="true"
-                          aria-controls="collapseThree"
-                        >
-                          Capacity
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseThree"
-                      className="collapse"
-                      aria-labelledby="headingThree"
-                      data-bs-parent="#accordionExample3"
-                    >
-                      <div className="card-body-chat">
-                        <div id="checkBoxes3">
-                          <div className="selectBox-cont">
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="bystatus" />
-                              <span className="checkmark" /> 2 Seater
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="bystatus" />
-                              <span className="checkmark" /> 4 Seater
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="bystatus" />
-                              <span className="checkmark" /> 5 Seater
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="bystatus" />
-                              <span className="checkmark" /> 7 Seater
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain9">
-                    <div className="card-header-new" id="headingFour">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseFour"
-                          aria-expanded="true"
-                          aria-controls="collapseFour"
-                        >
-                          Price
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseFour"
-                      className="collapse"
-                      aria-labelledby="headingFour"
-                      data-bs-parent="#accordionExample4"
-                    >
-                      <div className="card-body-chat">
-                        <div className="filter-range">
-                          <input type="text" className="input-range" />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain4">
-                    <div className="card-header-new" id="headingtransmiss">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapsetransmission"
-                          aria-expanded="true"
-                          aria-controls="collapsetransmission"
-                        >
-                          Transmission
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapsetransmission"
-                      className="collapse"
-                      aria-labelledby="headingtransmiss"
-                      data-bs-parent="#accordionExample2"
-                    >
-                      <div className="card-body-chat">
-                        <div className="fuel-list">
-                          <ul>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="transmission"
-                                  id="manual"
-                                  defaultChecked
-                                />
-                                <label htmlFor="manual">Manual </label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="transmission"
-                                  id="semi"
-                                />
-                                <label htmlFor="semi">Semi Automatic</label>
-                              </div>
-                            </li>
-                            <li>
-                              <div className="input-selection">
-                                <input
-                                  type="radio"
-                                  name="transmission"
-                                  id="automatic"
-                                />
-                                <label htmlFor="automatic">Automatic</label>
-                              </div>
-                            </li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain10">
-                    <div className="card-header-new" id="headingFive">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseFive"
-                          aria-expanded="true"
-                          aria-controls="collapseFive"
-                        >
-                          Rating
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseFive"
-                      className="collapse"
-                      aria-labelledby="headingFive"
-                      data-bs-parent="#accordionExample5"
-                    >
-                      <div className="card-body-chat">
-                        <div id="checkBoxes4">
-                          <div className="selectBox-cont">
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <span className="rating-count">5.0</span>
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star" />
-                              <span className="rating-count">4.0</span>
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star" />
-                              <i className="fas fa-star" />
-                              <span className="rating-count">3.0</span>
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star" />
-                              <i className="fas fa-star" />
-                              <i className="fas fa-star" />
-                              <span className="rating-count">2.0</span>
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="username" />
-                              <span className="checkmark" />
-                              <i className="fas fa-star filled" />
-                              <i className="fas fa-star" />
-                              <i className="fas fa-star" />
-                              <i className="fas fa-star" />
-                              <i className="fas fa-star" />
-                              <span className="rating-count">1.0</span>
-                            </label>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="accordion" id="accordionMain11">
-                    <div className="card-header-new" id="headingSix">
-                      <h6 className="filter-title">
-                        <a
-                          href="javascript:void(0);"
-                          className="w-100 collapsed"
-                          data-bs-toggle="collapse"
-                          data-bs-target="#collapseSix"
-                          aria-expanded="true"
-                          aria-controls="collapseSix"
-                        >
-                          Customer Recommendation
-                          <span className="float-end">
-                            <i className="fa-solid fa-chevron-down" />
-                          </span>
-                        </a>
-                      </h6>
-                    </div>
-                    <div
-                      id="collapseSix"
-                      className="collapse"
-                      aria-labelledby="headingSix"
-                      data-bs-parent="#accordionExample6"
-                    >
-                      <div className="card-body-chat">
-                        <div id="checkBoxes5">
-                          <div className="selectBox-cont">
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" /> 70% &amp; up
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" /> 60% &amp; up
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" /> 50% &amp; up
-                            </label>
-                            <label className="custom_check w-100">
-                              <input type="checkbox" name="category" />
-                              <span className="checkmark" /> 40% &amp; up
-                            </label>
-                            <div className="viewall-Two">
-                              <label className="custom_check w-100">
-                                <input type="checkbox" name="username" />
-                                <span className="checkmark" />
-                                30% &amp; up
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  type="submit"
-                  className="d-inline-flex align-items-center justify-content-center btn w-100 btn-primary filter-btn"
-                >
-                  <span>
-                    <i className="feather-filter me-2" />
-                  </span>
-                  Filter results
-                </button>
-                <a href="#" className="reset-filter">
-                  Reset Filter
-                </a>
-              </form>
-            </div>
+            <CarFilters setBrand={setBrand} clearAllFilters={clearAllFilters} setSeats={setSeats} seats={seats} setMileage={setMileage} mileage={mileage} fuelType={fuelType} category={category} brand={brand} setTransmission={setTransmission} transmission={transmission} setCategory={setCategory} setFuelType={setFuelType} model={model} setModel={setModel}/>
             <div className="col-lg-9">
-              <GridView />
-              {/*Pagination*/}
-              <div className="blog-pagination">
-                <nav>
-                  <ul className="pagination page-item justify-content-center">
-                    <li className="previtem">
-                      <a className="page-link" href="#">
-                        <i className="fas fa-regular fa-arrow-left me-2" /> Prev
-                      </a>
-                    </li>
-                    <li className="justify-content-center pagination-center">
-                      <div className="page-group">
-                        <ul>
-                          <li className="page-item">
-                            <a className="page-link" href="#">
-                              1
-                            </a>
-                          </li>
-                          <li className="page-item">
-                            <a className="active page-link" href="#">
-                              2{" "}
-                              <span className="visually-hidden">(current)</span>
-                            </a>
-                          </li>
-                          <li className="page-item">
-                            <a className="page-link" href="#">
-                              3
-                            </a>
-                          </li>
-                        </ul>
-                      </div>
-                    </li>
-                    <li className="nextlink">
-                      <a className="page-link" href="#">
-                        Next{" "}
-                        <i className="fas fa-regular fa-arrow-right ms-2" />
-                      </a>
-                    </li>
-                  </ul>
-                </nav>
-              </div>
-              {/*/Pagination*/}
+              {view === "grid" && (
+                <GridView
+                  cars={cars}
+                  loader={loading}
+                  selectedLocation={selectedLocation}
+                  pickupDate={pickupDate}
+                  returnDate={returnDate}
+                  viewPage={viewPage}
+                />
+              )}
+              {view === "list" && (
+                <ListView
+                  cars={cars}
+                  loader={loading}
+                  selectedLocation={selectedLocation}
+                  pickupDate={pickupDate}
+                  returnDate={returnDate}
+                  viewPage={viewPage}
+                />
+              )}
+              {view === "map" && (
+                <MapView
+                  cars={cars}
+                  loader={loading}
+                  selectedLocation={selectedLocation}
+                />
+              )}
             </div>
           </div>
         </div>

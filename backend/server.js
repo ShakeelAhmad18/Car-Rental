@@ -12,6 +12,8 @@ const onwerRoute=require('./routes/onwerRoute');
 const adminRoute=require('./routes/adminRoute');
 const userRoute=require('./routes/userRoute');
 const bookingRoute=require('./routes/bookingRoute');
+const insuranceRoute=require('./routes/insuranceRoute');
+const extraServiceRoute=require('./routes/extraServiceRoute');
 
 const app = express();
 const port = 3000;
@@ -43,6 +45,8 @@ app.use('/api/admin',carRoute);
 app.use('/api/user',adminRoute);
 app.use('/api/user',userRoute);
 app.use('/api/booking',bookingRoute);
+app.use('/api/insurance',insuranceRoute);
+app.use('/api/extraservice',extraServiceRoute);
 
 
 mongoose.connect(process.env.MONGO_URI, {

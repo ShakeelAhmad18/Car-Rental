@@ -9,20 +9,20 @@ import DatePicker from "react-datepicker";
 import { Link } from "react-router-dom";
 import "react-datepicker/dist/react-datepicker.css";
 
-//const API_KEY = "QrkPx0NbC9WTYGmetR7eg_vo0xUoWa8jp4JHeG_0gVc";
-
-
 const Home = () => {
   const [address, setAddress] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [pickupDate, setpickupDate] = useState(new Date());
-  const [returnDate,setReturnDate] = useState(new Date());
+  const [returnDate, setReturnDate] = useState(new Date());
   const [selectedLocation, setSelectedLocation] = useState(null); // Stores lat & lng
 
   document.title = "Go Rental-Home";
 
+  //calculate days
+
+ 
 
   useEffect(() => {
     const fetchSuggestions = async () => {
@@ -63,16 +63,12 @@ const Home = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  
-
   const handleSelectAddress = (suggestion) => {
     setAddress(suggestion.title); // Set the selected address
     setSelectedLocation(suggestion.position); // Store lat & lng
     setShowDropdown(false); // Hide dropdown
   };
 
-
- 
   return (
     <div className="main-wrapper">
       <Navbar />
@@ -124,7 +120,7 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <div className="section-search">
+      <div className="section-search page-search">
         <div className="container">
           <div className="search-box-banner">
             <form action="listing-grid.html">
@@ -138,16 +134,13 @@ const Home = () => {
                         ref={dropdownRef}
                       >
                         <div className="relative">
-                          {/* Input Field with More Placeholder Space */}
                           <input
                             type="text"
-                            className="w-full pl-1 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
+                            className="form-control"
                             placeholder="Enter City, Airport, or Address"
                           />
-                          {/* Icon (Adjust Position) */}
-                          <FaMapMarkerAlt className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-lg" />
                         </div>
                         {/* Dropdown */}
                         {showDropdown && suggestions.length > 0 && (
@@ -155,7 +148,7 @@ const Home = () => {
                             {suggestions.map((suggestion, index) => (
                               <li
                                 key={index}
-                                className="flex items-center px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                                className="flex items-center text-sm px-4 py-2 hover:bg-gray-100 cursor-pointer"
                                 onClick={() => handleSelectAddress(suggestion)}
                               >
                                 <FaMapMarkerAlt className="text-blue-500 mr-3" />
@@ -165,6 +158,9 @@ const Home = () => {
                           </ul>
                         )}
                       </div>
+                      <span>
+                        <i className="feather-map-pin" />
+                      </span>
                     </div>
                   </div>
                 </li>
@@ -174,26 +170,29 @@ const Home = () => {
                   </div>
                   <div className="input-block-wrapp">
                     <div className="input-block date-widget">
-                      <div className="group-img flex w-full pb-2">
+                      <div className="group-img text-sm">
                         <DatePicker
                           selected={pickupDate}
                           onChange={(date) => setpickupDate(date)}
                           minDate={new Date()}
-                          dateFormat="eee d MMMM yyyy"
+                          dateFormat="eee, d MMMM yyyy"
                           className="rounded-lg w-full lg:w-48"
                         />
                         <span>
-                          <i className="feather-calendar pb-1" />
+                          <i className="feather-calendar" />
                         </span>
                       </div>
                     </div>
                     <div className="input-block time-widge">
                       <div className="group-img">
                         <input
-                          type="time"
+                          type="text"
                           className="form-control timepicker"
                           placeholder="11:00 AM"
                         />
+                        <span>
+                          <i className="feather-clock" />
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -204,12 +203,12 @@ const Home = () => {
                   </div>
                   <div className="input-block-wrapp">
                     <div className="input-block date-widge">
-                      <div className="group-img w-full flex pb-2">
+                      <div className="group-img text-sm">
                         <DatePicker
                           selected={returnDate}
                           onChange={(date) => setReturnDate(date)}
                           minDate={new Date(pickupDate)}
-                          dateFormat="eee d MMMM yyyy"
+                          dateFormat="eee, d MMMM yyyy"
                           className="rounded-lg lg:w-48"
                         />
                         <span>
@@ -220,10 +219,13 @@ const Home = () => {
                     <div className="input-block time-widge">
                       <div className="group-img">
                         <input
-                          type="time"
+                          type="text"
                           className="form-control timepicker"
                           placeholder="11:00 AM"
                         />
+                        <span>
+                          <i className="feather-clock" />
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -231,11 +233,13 @@ const Home = () => {
                 <li className="column-group-last">
                   <div className="input-block">
                     <div className="search-btn">
-                      {<Link to='/explore-cars'> <button className="btn search-button" type="submit">
-                      
-                        <i className="fa fa-search" aria-hidden="true" />
-                        Search
-                      </button> </Link>}
+                      <Link to='/explore-cars'>
+                        <button className="btn search-button">
+                          {" "}
+                          <i className="fa fa-search" aria-hidden="true" />
+                          Search
+                        </button>
+                      </Link>
                     </div>
                   </div>
                 </li>

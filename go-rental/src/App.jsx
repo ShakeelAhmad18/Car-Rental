@@ -15,6 +15,9 @@ import { useSelector } from "react-redux";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import NotFound from "./components/NotFound";
+import CarDetails from "./pages/CarDetails";
+import AddInsurance from "./pages/Admin/AddInsurance";
+import ExtraServices from "./pages/Admin/ExtraServices";
 
 
 
@@ -30,6 +33,7 @@ function App() {
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/explore-cars" element={<Cars/>}/>
           <Route path="/adminRegister" element={<AdminRegister />} />
+          <Route path="/car-details/:id" element={<CarDetails/>} />
           <Route path="/adminlogin" element={<AdminLogin />} />
           <Route
             path="/admindashboard"
@@ -43,6 +47,8 @@ function App() {
           >
             <Route path="add-owner" element={<AddOwner />} />
             <Route path="add-car" element={<AddCar />} />
+            <Route path="add-insurance" element={<AddInsurance />} />
+            <Route path="extra-services" element={ <ExtraServices/>} />
             <Route path="allbookings" element={<AllBookings />} />
             <Route path="allcars" element={<GetAllCar />} />
             <Route path="edit/:id" element={<UpdateCar />} />
