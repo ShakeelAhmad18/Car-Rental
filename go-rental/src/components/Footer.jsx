@@ -158,10 +158,10 @@ const Footer = () => {
               <div className="copyright-menu">
                 <div className="vistors-details">
                   <ul className="d-flex">											
-                    <li><a href=""><img className="img-fluid" src="assets/img/icons/paypal.svg" alt="Paypal" /></a></li>											
-                    <li><a href=""><img className="img-fluid" src="assets/img/icons/visa.svg" alt="Visa" /></a></li>
-                    <li><a href=""><img className="img-fluid" src="assets/img/icons/master.svg" alt="Master" /></a></li>
-                    <li><a href=""><img className="img-fluid" src="assets/img/icons/applegpay.svg" alt="applegpay" /></a></li>
+                    <li><a href=""><img className="img-fluid" src="/assets/img/icons/paypal.svg" alt="Paypal" /></a></li>											
+                    <li><a href=""><img className="img-fluid" src="/assets/img/icons/visa.svg" alt="Visa" /></a></li>
+                    <li><a href=""><img className="img-fluid" src="/assets/img/icons/master.svg" alt="Master" /></a></li>
+                    <li><a href=""><img className="img-fluid" src="/assets/img/icons/applegpay.svg" alt="applegpay" /></a></li>
                   </ul>										   								
                 </div>
               </div>

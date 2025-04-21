@@ -3,13 +3,17 @@ import { DateRange } from "react-date-range";
 import { format } from "date-fns";
 import "react-date-range/dist/styles.css"; // main style
 import "react-date-range/dist/theme/default.css"; // theme css
+import { useDispatch } from 'react-redux';
+import { setDates } from '../redux/bookingSlice';
 
-const Availability = ({ pickupAddress }) => {
+const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
   const [availability, setAvailability] = useState("self-pickup");
+  const  dispatch = useDispatch();
+
   const [range, setRange] = useState([
     {
-      startDate: new Date(),
-      endDate: new Date(),
+      startDate: new Date(pickupDate),
+      endDate: new Date(returnDate),
       key: "selection",
     },
   ]);
@@ -170,9 +174,19 @@ const Availability = ({ pickupAddress }) => {
                               <div className="mt-3">
                                 <DateRange
                                   editableDateInputs={true}
-                                  onChange={(item) =>
-                                    setRange([item.selection])
-                                  }
+                                  onChange={(item) => {
+                                    const { startDate, endDate } =
+                                      item.selection;
+                                    setRange([item.selection]);
+
+                                    // Dispatch to Redux
+                                    dispatch(
+                                      setDates({
+                                        pickupDate: startDate,
+                                        returnDate: endDate,
+                                      })
+                                    );
+                                  }}
                                   moveRangeOnFirstSelection={false}
                                   ranges={range}
                                   rangeColors={["#f0c241"]}

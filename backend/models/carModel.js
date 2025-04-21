@@ -18,7 +18,7 @@ const carSchema = new mongoose.Schema({
         required: true,
     },
     rentPerkm: {
-        type: String,
+        type: Number,
         required: true,
     },
     image: {

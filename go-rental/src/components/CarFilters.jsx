@@ -501,7 +501,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
         </div>
         <button
           className="reset-filter text-red-600 d-inline-flex align-items-center justify-content-center btn w-100 btn-primary filter-btn"
-          onClick={clearAllFilters}
+         
         >
           Reset Filter
         </button>

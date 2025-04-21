@@ -99,8 +99,7 @@ useEffect(() => {
       </div>
     );
   }
-
-   console.log(currentItems)
+   
   
   return (
     <div>

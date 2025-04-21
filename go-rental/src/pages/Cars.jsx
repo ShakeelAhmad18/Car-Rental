@@ -14,6 +14,7 @@ import axios from "axios";
 import { getAvailableCars } from "../redux/carSlice";
 import { useDispatch, useSelector } from "react-redux";
 import CarFilters from "../components/CarFilters";
+import { setDates } from "../redux/bookingSlice";
 
 const Cars = () => {
   const [address, setAddress] = useState("");
@@ -21,7 +22,8 @@ const Cars = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
   const [pickupDate, setpickupDate] = useState(new Date());
-  const [returnDate, setReturnDate] = useState(new Date(pickupDate));
+  const [returnDate, setReturnDate] = useState(new Date());
+  const [isReturnDateTouched, setIsReturnDateTouched] = useState(false);
   const [selectedLocation, setSelectedLocation] = useState(null)
   const [view, setView] = useState("grid");
   const dispatch = useDispatch();
@@ -92,6 +94,42 @@ const Cars = () => {
     setView(views);
   };
 
+
+  //handle pickuodate 
+
+  const handlePickupDateChange = (date) => {
+    setpickupDate(date);
+
+    // If return date wasn't manually touched or is before pickup
+    if (!isReturnDateTouched || date > returnDate) {
+      setReturnDate(date); // match pickupDate initially
+      setIsReturnDateTouched(false);
+    }
+  };
+
+  //handle return date
+
+  const handleReturnDateChange = (date) => {
+    setReturnDate(date);
+    setIsReturnDateTouched(true); // user manually selected it
+  };
+
+
+  //dispatch SetDate 
+
+  useEffect(()=>{
+
+    dispatch(
+      setDates({
+        pickupDate: pickupDate.toISOString(),
+        returnDate: returnDate.toISOString(),
+      })
+    );
+
+
+  },[returnDate,pickupDate,dispatch])
+
+
   const clearAllFilters = (e) => {
     e.preventDefault();
 
@@ -130,7 +168,7 @@ const Cars = () => {
    
     
 
-  },[address,returnDate,pickupDate,clearAllFilters,selectedLocation,dispatch,brand,model,year,mileage,transmission,fuelType,seats,category])
+  },[address,returnDate,pickupDate,selectedLocation,dispatch,brand,model,year,mileage,transmission,fuelType,seats,category])
 
 
 
@@ -215,7 +253,7 @@ const Cars = () => {
                       <div className="group-img text-sm">
                         <DatePicker
                           selected={pickupDate}
-                          onChange={(date) => setpickupDate(date)}
+                          onChange={handlePickupDateChange}
                           minDate={new Date()}
                           dateFormat="eee, d MMMM yyyy"
                           className="rounded-lg w-full lg:w-48"
@@ -248,7 +286,7 @@ const Cars = () => {
                       <div className="group-img text-sm">
                         <DatePicker
                           selected={returnDate}
-                          onChange={(date) => setReturnDate(date)}
+                          onChange={handleReturnDateChange}
                           minDate={new Date(pickupDate)}
                           dateFormat="eee, d MMMM yyyy"
                           className="rounded-lg lg:w-48"
@@ -377,7 +415,23 @@ const Cars = () => {
       <section className="section car-listing pt-0">
         <div className="container">
           <div className="row">
-            <CarFilters setBrand={setBrand} clearAllFilters={clearAllFilters} setSeats={setSeats} seats={seats} setMileage={setMileage} mileage={mileage} fuelType={fuelType} category={category} brand={brand} setTransmission={setTransmission} transmission={transmission} setCategory={setCategory} setFuelType={setFuelType} model={model} setModel={setModel}/>
+            <CarFilters
+              setBrand={setBrand}
+              clearAllFilters={clearAllFilters}
+              setSeats={setSeats}
+              seats={seats}
+              setMileage={setMileage}
+              mileage={mileage}
+              fuelType={fuelType}
+              category={category}
+              brand={brand}
+              setTransmission={setTransmission}
+              transmission={transmission}
+              setCategory={setCategory}
+              setFuelType={setFuelType}
+              model={model}
+              setModel={setModel}
+            />
             <div className="col-lg-9">
               {view === "grid" && (
                 <GridView
