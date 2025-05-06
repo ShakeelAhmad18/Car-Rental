@@ -15,7 +15,8 @@ const CarDetails = () => {
   const { id } = useParams();
   const dispatch = useDispatch();
   const { car } = useSelector((state) => state.car);
-  const { pickupDate, returnDate ,rentalDays,selectedCar,basePrice,tax,subTotal} = useSelector((state) => state.booking);
+  const { pickupDate,deliveryFee,pickupType, returnDate ,rentalDays,selectedCar,basePrice,tax,subTotal} = useSelector((state) => state.booking);
+  
   
 
   useEffect(() => {
@@ -23,8 +24,6 @@ const CarDetails = () => {
     }, []);
 
     
-  
-
   useEffect(() => {
     dispatch(getCarById(id));
   }, [id, dispatch]);
@@ -32,15 +31,18 @@ const CarDetails = () => {
 
   useEffect(() => {
     dispatch(setCar(car));
+    
     dispatch(setDates({ pickupDate, returnDate }));
+    
   }, [dispatch, car]);
 
-   useEffect(()=>{
-    dispatch(setCity(selectedCar?.address?.city));
-    dispatch(calculateSubTotal());
-   },[dispatch,rentalDays])
-  
+   useEffect(() => {
+     dispatch(setCity(selectedCar?.address?.city));
+     dispatch(calculateSubTotal());
+   }, [dispatch, rentalDays, selectedCar, pickupType]);
 
+   
+   
   return (
     <div className="main-wrapper text-xl font-bold font-serif">
       <Navbar />
@@ -55,7 +57,7 @@ const CarDetails = () => {
                     <Link to="/">Home</Link>
                   </li>
                   <li className="breadcrumb-item">
-                    <a href="javascript:void(0);">Listings</a>
+                    <a>Listings</a>
                   </li>
                   <li className="breadcrumb-item active" aria-current="page">
                     {car?.name}
@@ -144,7 +146,7 @@ const CarDetails = () => {
                       <i className="fa-solid fa-person-walking" />
                       4.2 Km Away
                     </span>
-                    <a href="javascript:void(0);" className="fav-icon">
+                    <a className="fav-icon">
                       <i className="fa-regular fa-heart" />
                     </a>
                   </div>
@@ -337,7 +339,7 @@ const CarDetails = () => {
                         </div>
                         <div className="featues-info">
                           <span>Mileage </span>
-                          <h6>{car?.milage}</h6>
+                          <h6>{car?.mileage}</h6>
                         </div>
                       </div>
                       <div className="featureslist d-flex align-items-center col-xl-3 col-md-4 col-sm-6">
@@ -1079,13 +1081,18 @@ const CarDetails = () => {
                     <p>State Tax</p>
                     <h6>${tax.toFixed(2)}</h6>
                   </div>
+                  {pickupType === "Delivery" && (
+                    <div className="price-item">
+                      <p>Delivery Charges</p>
+                      <h6>${deliveryFee}</h6>
+                    </div>
+                  )}
                   <div className="price-item">
                     <p>Sub Total</p>
                     <h6>${subTotal}</h6>
                   </div>
                   <div className="text-end">
                     <a
-                      href="javascript:void(0);"
                       data-bs-toggle="modal"
                       data-bs-target="#fare_details"
                       className="fare-link"
@@ -1175,32 +1182,32 @@ const CarDetails = () => {
                 </div>
                 <ul className="nav-social">
                   <li>
-                    <a href="javascript:void(0)">
+                    <a>
                       <i className="fa-brands fa-facebook-f fa-facebook fi-icon" />
                     </a>
                   </li>
                   <li>
-                    <a href="javascript:void(0)">
+                    <a>
                       <i className="fab fa-instagram fi-icon" />
                     </a>
                   </li>
                   <li>
-                    <a href="javascript:void(0)">
+                    <a>
                       <i className="fab fa-behance fi-icon" />
                     </a>
                   </li>
                   <li>
-                    <a href="javascript:void(0)">
+                    <a>
                       <i className="fa-brands fa-pinterest-p fi-icon" />
                     </a>
                   </li>
                   <li>
-                    <a href="javascript:void(0)">
+                    <a>
                       <i className="fab fa-twitter fi-icon" />{" "}
                     </a>
                   </li>
                   <li>
-                    <a href="javascript:void(0)">
+                    <a>
                       <i className="fab fa-linkedin fi-icon" />
                     </a>
                   </li>

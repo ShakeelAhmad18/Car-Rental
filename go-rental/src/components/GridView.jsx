@@ -4,6 +4,8 @@ import { calculateDistance } from "../utils/Calculatedistance";
 import { Link } from "react-router-dom";
 import { getRentalDays } from "../utils/GetRentalDays";
 import Pagination from "./Pagination";
+import CarNotFound from "./CarNotFound";
+import SearchByLocation from "./SearchByLocation";
 
 
 const GridView = ({ cars, loader, selectedLocation , pickupDate , returnDate,viewPage}) => {
@@ -84,8 +86,7 @@ useEffect(() => {
   ) {
     return (
       <div className="min-h-screen flex justify-center items-center flex-col">
-        <h2 className="text-2xl text-black font-bold">Find Your Dream Car Near to Its Location</h2>
-        <h3>Please Enter his Address!</h3>
+        <SearchByLocation/>
       </div>
     );
   }
@@ -94,8 +95,8 @@ useEffect(() => {
 
   if (currentItems?.length === 0) {
     return (
-      <div className="min-h-screen flex justify-center items-center">
-        <h1 className="text-2xl text-black font-bold">No Cars Found </h1>
+      <div className="min-h-screen flex justify-center items-center flex-col">
+        <CarNotFound />
       </div>
     );
   }

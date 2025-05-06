@@ -1,14 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { use, useEffect, useRef, useState } from "react";
 import { DateRange } from "react-date-range";
 import { format } from "date-fns";
 import "react-date-range/dist/styles.css"; // main style
 import "react-date-range/dist/theme/default.css"; // theme css
-import { useDispatch } from 'react-redux';
-import { setDates } from '../redux/bookingSlice';
+import { useDispatch, useSelector } from "react-redux";
+import { setAddress, setDates } from "../redux/bookingSlice";
+import { Link } from "react-router-dom";
+import DeliveryAvaiablity from "./DeliveryAvaiablity";
+import PickupAvailability from "./PickupAvailability";
 
-const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
+const Availability = ({ pickupAddress, pickupDate, returnDate }) => {
   const [availability, setAvailability] = useState("self-pickup");
-  const  dispatch = useDispatch();
+  const [showPicker, setShowPicker] = useState(false);
+  const { pickupType } = useSelector((state) => state.booking);
+
+  const pickerRef = useRef(null);
+  const dispatch = useDispatch();
 
   const [range, setRange] = useState([
     {
@@ -17,8 +24,18 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
       key: "selection",
     },
   ]);
-  const [showPicker, setShowPicker] = useState(false);
-  const pickerRef = useRef(null);
+  
+  
+  
+  useEffect(() => {
+    if (availability) {
+      dispatch(
+        setAddress({
+          pickupType: availability
+        })
+      );
+    }
+  }, [dispatch, availability]);
 
   const formattedRange = `${format(
     range[0].startDate,
@@ -38,6 +55,8 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
     };
   }, []);
 
+  
+  
   return (
     <div className="review-sec mt-0">
       <div className="review-header">
@@ -87,75 +106,17 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
               <form>
                 <ul>
                   <li className="column-group-main">
-                    {availability === "Delivery" && (
-                      <div className="input-block">
-                        <label>Delivery Location</label>
-                        <div className="group-img">
-                          <div className="form-wrap">
-                            <input
-                              type="text"
-                              className="form-control"
-                              placeholder="Enter your location"
-                            />
-                            <span className="form-icon">
-                              <i className="fa-solid fa-location-crosshairs" />
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
+                    {availability === "Delivery" && <DeliveryAvaiablity />}
                     {availability === "self-pickup" && (
-                      <div className="input-block">
-                        <label>Pickup Location</label>
-                        <div className="group-img">
-                          <div className="form-wrap">
-                            <input
-                              type="text"
-                              value={pickupAddress}
-                              readOnly
-                              className="form-control"
-                              placeholder="Enter your location"
-                            />
-                            <span className="form-icon">
-                              <i className="fa-solid fa-location-crosshairs" />
-                            </span>
-                          </div>
-                        </div>
-                      </div>
+                      <PickupAvailability pickup={pickupAddress} />
                     )}
-                  </li>
-                  <li className="column-group-main">
-                    <div className="input-block">
-                      <label className="custom_check d-inline-flex location-check m-0">
-                        <span>Return to same location</span>
-                        <input type="checkbox" name="remeber" />
-                        <span className="checkmark" />
-                      </label>
-                    </div>
-                  </li>
-                  <li className="column-group-main">
-                    <div className="input-block">
-                      <label>Return Location</label>
-                      <div className="group-img">
-                        <div className="form-wrap">
-                          <input
-                            type="text"
-                            className="form-control"
-                            placeholder="78, 10th street Laplace USA"
-                          />
-                          <span className="form-icon">
-                            <i className="fa-solid fa-location-crosshairs" />
-                          </span>
-                        </div>
-                      </div>
-                    </div>
                   </li>
                   <li className="column-group-main">
                     <div className="input-block m-0">
                       <label>Pickup Date & Return Date</label>
                     </div>
                     <div className="input-block-wrapp sidebar-form">
-                      <div className="input-block  me-lg-2">
+                      <div className="input-block me-lg-2">
                         <div className="group-img">
                           <div
                             className="form-wrap flex flex-col items-center justify-center p-4 shadow-lg rounded-lg w-fit mx-auto mt-10 relative"
@@ -166,7 +127,7 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
                               onClick={() => setShowPicker((prev) => !prev)}
                               className="cursor-pointer text-[16px] px-4 py-2 bg-orange-100 text-orange-700 font-medium rounded-lg shadow hover:bg-orange-200 transition"
                             >
-                              📅 {formattedRange}
+                              {formattedRange}
                             </div>
 
                             {/* Date picker appears only when showPicker is true */}
@@ -182,8 +143,8 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
                                     // Dispatch to Redux
                                     dispatch(
                                       setDates({
-                                        pickupDate: startDate,
-                                        returnDate: endDate,
+                                        pickupDate: startDate.toISOString(),
+                                        returnDate: endDate.toISOString(),
                                       })
                                     );
                                   }}
@@ -199,38 +160,17 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
                           </div>
                         </div>
                       </div>
-                      {/*<div className="input-block">
-                        <div className="group-img">
-                          <div className="form-wrap">
-                            <input
-                              type="text"
-                              className="form-control timepicker"
-                              placeholder="11:00 AM"
-                            />
-                            <span className="form-icon">
-                              <i className="fa-regular fa-clock" />
-                            </span>
-                          </div>
-                        </div>
-                      </div>*/}
                     </div>
                   </li>
                   <li className="column-group-last">
                     <div className="input-block mb-0">
                       <div className="search-btn">
-                        <a
-                          href="booking-checkout.html"
+                        <Link
+                          to="/checkout"
                           className="btn btn-primary check-available w-100"
                         >
                           Book
-                        </a>
-                        <a
-                          data-bs-toggle="modal"
-                          data-bs-target="#enquiry"
-                          className="btn btn-theme"
-                        >
-                          Enquire Us
-                        </a>
+                        </Link>
                       </div>
                     </div>
                   </li>
@@ -244,4 +184,4 @@ const Availability = ({ pickupAddress,pickupDate,returnDate}) => {
   );
 };
 
-export default Availability
+export default Availability;

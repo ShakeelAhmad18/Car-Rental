@@ -18,6 +18,8 @@ import NotFound from "./components/NotFound";
 import CarDetails from "./pages/CarDetails";
 import AddInsurance from "./pages/Admin/AddInsurance";
 import ExtraServices from "./pages/Admin/ExtraServices";
+import Checkout from "./pages/Checkout";
+import Services from "./pages/Services";
 
 
 
@@ -32,6 +34,9 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/contact-us" element={<Contact />} />
           <Route path="/explore-cars" element={<Cars/>}/>
+          <Route path="/checkout" element={<Checkout/>}>
+            <Route path="services" element={<Services/>}/>
+          </Route>
           <Route path="/adminRegister" element={<AdminRegister />} />
           <Route path="/car-details/:id" element={<CarDetails/>} />
           <Route path="/adminlogin" element={<AdminLogin />} />

@@ -105,7 +105,6 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingOne">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
                   className="w-100"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseOne"
@@ -154,7 +153,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingTwo">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
+                  
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseTwo"
@@ -198,7 +197,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingYear">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
+                  
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseYear"
@@ -242,7 +241,6 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingfuel">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapsefuel"
@@ -286,7 +284,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingmileage">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
+                  
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapsemileage"
@@ -330,7 +328,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingThree">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
+                  
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseThree"
@@ -374,7 +372,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingtransmiss">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
+                  
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapsetransmission"
@@ -420,7 +418,7 @@ const CarFilters = ({setBrand,clearAllFilters,brand,fuelType ,setMileage,mileage
             <div className="card-header-new" id="headingFive">
               <h6 className="filter-title">
                 <a
-                  href="javascript:void(0);"
+                  
                   className="w-100 collapsed"
                   data-bs-toggle="collapse"
                   data-bs-target="#collapseFive"

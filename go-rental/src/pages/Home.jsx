@@ -72,7 +72,7 @@ const Home = () => {
   return (
     <div className="main-wrapper">
       <Navbar />
-      <section className="banner-section banner-slider">
+      <section className="banner-section banner-slider mb-5">
         <div className="container">
           <div className="home-banner">
             <div className="row align-items-center">

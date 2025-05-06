@@ -9,12 +9,16 @@ import Footer from "../components/Footer";
 import GridView from "../components/GridView";
 import ListView from "../components/ListView";
 import MapView from "../components/MapView";
+import "react-time-picker/dist/TimePicker.css";
+import "react-clock/dist/Clock.css";
 import { FaMapMarkerAlt } from "react-icons/fa";
 import axios from "axios";
 import { getAvailableCars } from "../redux/carSlice";
 import { useDispatch, useSelector } from "react-redux";
 import CarFilters from "../components/CarFilters";
 import { setDates } from "../redux/bookingSlice";
+import TimePicker from 'react-time-picker';
+
 
 const Cars = () => {
   const [address, setAddress] = useState("");
@@ -173,7 +177,6 @@ const Cars = () => {
 
 
 
-  
    
   return (
     <div className="main-wrapper listing-page text-xl font-bold font-serif">
@@ -203,7 +206,7 @@ const Cars = () => {
       <div className="section-search page-search">
         <div className="container">
           <div className="search-box-banner">
-            <form action="listing-grid.html">
+            <form>
               <ul className="align-items-center">
                 <li className="column-group-main">
                   <div className="input-block">
@@ -250,7 +253,7 @@ const Cars = () => {
                   </div>
                   <div className="input-block-wrapp">
                     <div className="input-block date-widget">
-                      <div className="group-img text-sm">
+                      <div className="group-img text-sm sm:mb-3 sm:w-full">
                         <DatePicker
                           selected={pickupDate}
                           onChange={handlePickupDateChange}
@@ -283,13 +286,13 @@ const Cars = () => {
                   </div>
                   <div className="input-block-wrapp">
                     <div className="input-block date-widge">
-                      <div className="group-img text-sm">
+                      <div className="group-img text-sm sm:mb-3 sm:w-full">
                         <DatePicker
                           selected={returnDate}
                           onChange={handleReturnDateChange}
                           minDate={new Date(pickupDate)}
                           dateFormat="eee, d MMMM yyyy"
-                          className="rounded-lg lg:w-48"
+                          className="rounded-lg"
                         />
                         <span>
                           <i className="feather-calendar" />
@@ -313,8 +316,7 @@ const Cars = () => {
                 <li className="column-group-last">
                   <div className="input-block">
                     <div className="search-btn">
-                      <button className="btn search-button" type="submit">
-                        {" "}
+                      <button className="btn search-button">
                         <i className="fa fa-search" aria-hidden="true" />
                         Search
                       </button>
@@ -412,58 +414,60 @@ const Cars = () => {
           </div>
         </div>
       </div>
-      <section className="section car-listing pt-0">
-        <div className="container">
-          <div className="row">
-            <CarFilters
-              setBrand={setBrand}
-              clearAllFilters={clearAllFilters}
-              setSeats={setSeats}
-              seats={seats}
-              setMileage={setMileage}
-              mileage={mileage}
-              fuelType={fuelType}
-              category={category}
-              brand={brand}
-              setTransmission={setTransmission}
-              transmission={transmission}
-              setCategory={setCategory}
-              setFuelType={setFuelType}
-              model={model}
-              setModel={setModel}
-            />
-            <div className="col-lg-9">
-              {view === "grid" && (
-                <GridView
-                  cars={cars}
-                  loader={loading}
-                  selectedLocation={selectedLocation}
-                  pickupDate={pickupDate}
-                  returnDate={returnDate}
-                  viewPage={viewPage}
-                />
-              )}
-              {view === "list" && (
-                <ListView
-                  cars={cars}
-                  loader={loading}
-                  selectedLocation={selectedLocation}
-                  pickupDate={pickupDate}
-                  returnDate={returnDate}
-                  viewPage={viewPage}
-                />
-              )}
-              {view === "map" && (
-                <MapView
-                  cars={cars}
-                  loader={loading}
-                  selectedLocation={selectedLocation}
-                />
-              )}
+      {cars && (
+        <section className="section car-listing pt-0">
+          <div className="container">
+            <div className="row">
+              <CarFilters
+                setBrand={setBrand}
+                clearAllFilters={clearAllFilters}
+                setSeats={setSeats}
+                seats={seats}
+                setMileage={setMileage}
+                mileage={mileage}
+                fuelType={fuelType}
+                category={category}
+                brand={brand}
+                setTransmission={setTransmission}
+                transmission={transmission}
+                setCategory={setCategory}
+                setFuelType={setFuelType}
+                model={model}
+                setModel={setModel}
+              />
+              <div className="col-lg-9">
+                {view === "grid" && (
+                  <GridView
+                    cars={cars}
+                    loader={loading}
+                    selectedLocation={selectedLocation}
+                    pickupDate={pickupDate}
+                    returnDate={returnDate}
+                    viewPage={viewPage}
+                  />
+                )}
+                {view === "list" && (
+                  <ListView
+                    cars={cars}
+                    loader={loading}
+                    selectedLocation={selectedLocation}
+                    pickupDate={pickupDate}
+                    returnDate={returnDate}
+                    viewPage={viewPage}
+                  />
+                )}
+                {view === "map" && (
+                  <MapView
+                    cars={cars}
+                    loader={loading}
+                    selectedLocation={selectedLocation}
+                  />
+                )}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
       <Footer />
     </div>
   );

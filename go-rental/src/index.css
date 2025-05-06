@@ -2,3 +2,128 @@
 @plugin "daisyui";
 
 
+.modern-date-picker {
+  max-width: 600px;
+  margin: 0 auto;
+  position: relative;
+  font-family: 'Inter', sans-serif;
+
+  .date-input-container {
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+    background: white;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #3b82f6;
+      box-shadow: 0 1px 3px rgba(59, 130, 246, 0.12);
+    }
+
+    .date-input {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .calendar-icon, .chevron-icon {
+        width: 20px;
+        height: 20px;
+        fill: #6b7280;
+      }
+
+      .selected-dates {
+        flex: 1;
+        font-size: 16px;
+        color: #1f2937;
+        font-weight: 500;
+      }
+    }
+  }
+
+  .date-range-container {
+    position: relative;
+    margin-top: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 10;
+    background: white;
+
+    .custom-date-range {
+      width: 100%;
+
+      .rdrMonth {
+        width: 100%;
+        padding: 0 12px;
+      }
+
+      .rdrWeekDay {
+        font-weight: 500;
+        color: #374151;
+      }
+
+      .rdrDayDisabled {
+        background: #f3f4f6;
+        color: #d1d5db;
+      }
+
+      .rdrDayToday .rdrDayNumber span {
+        color: #3b82f6;
+        font-weight: bold;
+      }
+
+      .rdrDaySelected {
+        background: #3b82f6;
+      }
+
+      .rdrStartEdge,
+      .rdrEndEdge {
+        background: #3b82f6;
+      }
+
+      .rdrInRange {
+        background: #bfdbfe;
+      }
+    }
+  }
+
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #dc2626;
+    margin-top: 12px;
+    padding: 12px;
+    background: #fef2f2;
+    border-radius: 8px;
+    font-size: 14px;
+
+    .error-icon {
+      width: 18px;
+      height: 18px;
+      fill: #dc2626;
+    }
+  }
+}
+
+@media (max-width: 640px) {
+  .modern-date-picker {
+    .date-range-container {
+      transform: scale(0.9);
+      transform-origin: top left;
+    }
+  }
+}
+
+.more-adon-info {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: max-height 0.4s ease, opacity 0.4s ease;
+}
+
+.more-adon-info.show {
+  max-height: 200px; /* or set to a value that fits your content */
+  opacity: 1;
+}
